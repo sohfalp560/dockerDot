@@ -1,0 +1,40 @@
+# The main config of Nvidia graphics (other versions on comment)
+services:
+  ollama:
+    image: ollama/ollama:0.6.3 # 0.6.3-rocm # for amd graphics and not for cpu
+    container_name: ollama
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    command: ["serve", "--verbose"]  # Add verbose logging
+    environment:
+      - OLLAMA_HOST=0.0.0.0  # Ensure Ollama listens on all interfaces
+      - OLLAMA_MODELS=/root/.ollama/models  # Specify model directory
+    deploy: # for GPU-specific settings, if you need CPU-only, remove it.
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia # amdgpu 
+              count: 1
+              capabilities: [gpu]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - ollama
+    ports:
+      - "11435:8080" # "3000:8080" is the default, but I am django developer :)
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  open-webui:
