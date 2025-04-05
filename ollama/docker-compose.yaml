@@ -16,10 +16,12 @@ services:
       - seccomp=unconfined
     tty: true
     privileged: true
-    deploy: # for GPU-specific settings, if you need CPU-only, remove it.
+    mem_limit: 12G
+    cpus: 4
+    deploy: 
       resources:
         reservations:
-          devices:
+          devices: # for GPU-specific settings, if you need CPU-only, remove it.
             - driver: nvidia # amdgpu 
               count: 1
               capabilities: [gpu]
