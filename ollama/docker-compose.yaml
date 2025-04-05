@@ -8,10 +8,10 @@ services:
     ports:
       - "11434:11434"
     restart: unless-stopped
-    command: ["serve", "--verbose"]  # Add verbose logging
     environment:
       - OLLAMA_HOST=0.0.0.0  # Ensure Ollama listens on all interfaces
       - OLLAMA_MODELS=/root/.ollama/models  # Specify model directory
+      - OLLAMA_DEBUG=1 # For --verbose
     security_opt:
       - seccomp=unconfined
     tty: true
