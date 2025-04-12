@@ -1,0 +1,58 @@
+services:
+  neo4j:
+    image: neo4j:2025.03.0-bullseye
+    container_name: neo4j-db
+    hostname: neo4j-core
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - neo4j-network
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+      - "7473:7473"  # HTTPS
+      - "2004:2004"  # Metrics
+    environment:
+      - NEO4J_AUTH=${DB_USERNAME}/${DB_PASSWORD}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4JLABS_PLUGINS='["apoc", "graph-data-science"]'
+      - NEO4J_dbms_memory_heap_initial__size=4G
+      - NEO4J_dbms_memory_heap_max__size=8G
+      - NEO4J_dbms_memory_pagecache_size=2G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_logs_query_enabled=off
+      - NEO4J_dbms_connector_https_enabled=true
+      - NEO4J_dbms_connector_bolt_tls_level=REQUIRED
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_allow__upgrade=true
+      - NEO4J_dbms_default__database=neo4j
+      - NEO4J_metrics_enabled=true
+      - NEO4J_metrics_prometheus_enabled=true
+      - NEO4J_apoc_uuid_enabled=true
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_plugins:/plugins
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${DB_PASSWORD}", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 12G
+        reservations:
+          memory: 8G
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_plugins:
+
+networks:
+  neo4j-network:
+    driver: bridge
