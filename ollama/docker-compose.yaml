@@ -1,7 +1,7 @@
 # The main config of Nvidia graphics (other versions on comment)
 services:
   ollama:
-    image: ollama/ollama:0.6.3 # 0.6.3-rocm # for amd graphics and not for cpu
+    image: ollama/ollama:0.11.8 # 0.11.8-rocm # for amd graphics and not for cpu
     container_name: ollama
     volumes:
       - ollama:/root/.ollama
@@ -12,13 +12,15 @@ services:
       - OLLAMA_HOST=0.0.0.0  # Ensure Ollama listens on all interfaces
       - OLLAMA_MODELS=/root/.ollama/models  # Specify model directory
       - OLLAMA_DEBUG=1 # For --verbose
+      - OLLAMA_Flash_ATTENTION=1 # For ram usage reducer
+      - OLLAMA_KEEP_ALIVE=1m # For keep alive a model (wo stop) in 1minutes
     security_opt:
       - seccomp=unconfined
     tty: true
     privileged: true
     mem_limit: 12G
     cpus: 4
-    deploy: 
+    deploy: # for GPU-specific settings, if you need CPU-only, remove it.
       resources:
         reservations:
           devices: # for GPU-specific settings, if you need CPU-only, remove it.
